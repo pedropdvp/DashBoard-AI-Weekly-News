@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Week in Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a weekly briefing. Masthead, week at a glance, numbers strip, then six section panels, each a summary with a "See more" drawer. */
+/* Dark is the default; the header button switches to light and is remembered per viewer. */
+:root {
+  --bg: #0b1a33; --panel: #12264a; --fg: #eaf0fa; --muted: #a6b6d0; --line: #24416f;
+  --accent: #8cb4ff; --accent-soft: #1a3563;
+  --c-google: #7aa7ff; --c-anthropic: #e69a73; --c-openai: #5fcfa9; --c-perplexity: #62c3d2; --c-china: #f08080; --c-disrupt: #b597f0;
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f6f7f9; --panel: #ffffff; --fg: #16202b; --muted: #5a6573; --line: #dde2e8;
+  --accent: #1f5fd1; --accent-soft: #e6eefc;
+  --c-google: #2b6de0; --c-anthropic: #b8582f; --c-openai: #1d8a6b; --c-perplexity: #237f8f; --c-china: #c23b3b; --c-disrupt: #7a4fc2;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  transition: background-color .2s ease, color .2s ease;
+}
+.mast-right { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.theme-btn { text-transform: none; }
+.theme-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+.wrap {
+  max-width: 1080px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+  display: grid; gap: 36px;
+}
+.mono { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .04em; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+
+/* Masthead */
+.mast { display: grid; gap: 14px; border-bottom: 2px solid var(--fg); padding-bottom: 22px; }
+.mast-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); text-transform: uppercase; }
+.mast h1 { font-size: clamp(36px, 6vw, 60px); font-weight: 800; letter-spacing: -.03em; }
+.mast h1 span { color: var(--accent); }
+.glance { font-size: 19px; max-width: 68ch; margin: 0; }
+.glance strong { font-weight: 600; }
+
+/* Numbers strip */
+.numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.num { background: var(--panel); padding: 16px 16px 14px; display: grid; gap: 4px; align-content: start; }
+.num b { font-family: var(--font-display); font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.num p { margin: 0; font-size: 14.5px; line-height: 1.4; color: var(--muted); }
+.num .tag { text-transform: uppercase; }
+
+/* Section header row */
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.bar h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip, .btn {
+  font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .03em;
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg);
+  padding: 7px 12px; border-radius: 999px; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.chip:hover, .btn:hover { border-color: var(--fg); }
+.chip:focus-visible, .btn:focus-visible, .more:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+
+/* Topic panels */
+.topics { display: grid; gap: 20px; }
+.topic {
+  background: var(--panel); border: 1px solid var(--line); border-top: 4px solid var(--c);
+  padding: 22px clamp(16px, 3vw, 30px) 20px; display: grid; gap: 14px; scroll-margin-top: 16px;
+}
+.topic-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.topic h3 { font-size: clamp(24px, 3.4vw, 30px); font-weight: 700; letter-spacing: -.01em; }
+.pulse { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-transform: uppercase; }
+.bars { display: inline-flex; gap: 3px; align-items: flex-end; }
+.bars i { width: 5px; background: var(--line); border-radius: 1px; }
+.bars i:nth-child(1) { height: 7px; } .bars i:nth-child(2) { height: 11px; } .bars i:nth-child(3) { height: 15px; }
+.bars i.on { background: var(--c); }
+.summary { margin: 0; max-width: 70ch; font-size: 18px; }
+.keys { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; max-width: 75ch; }
+.keys li { display: grid; grid-template-columns: 74px 1fr; gap: 12px; font-size: 16px; line-height: 1.5; }
+.keys .when { color: var(--muted); padding-top: 3px; }
+.more {
+  justify-self: start; font-family: var(--font-display); font-weight: 500; font-size: 15px;
+  background: transparent; color: var(--c); border: 1.5px solid var(--c); border-radius: 6px;
+  padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.more:hover { background: var(--c); color: var(--panel); }
+.more .arrow { transition: transform .2s ease; display: inline-block; }
+.more[aria-expanded="true"] .arrow { transform: rotate(180deg); }
+.deep { border-top: 1px dashed var(--line); padding-top: 18px; display: grid; gap: 18px; }
+.deep h4 { font-family: var(--font-display); font-size: 17px; margin: 0 0 6px; }
+.deep p { margin: 0; max-width: 72ch; font-size: 16.5px; }
+.deep ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; font-size: 16.5px; }
+.why { background: var(--accent-soft); padding: 14px 16px; border-left: 3px solid var(--c); }
+.why p { font-style: italic; }
+.sources { display: grid; gap: 6px; }
+.sources ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14.5px; }
+.sources a { color: var(--accent); text-underline-offset: 2px; overflow-wrap: anywhere; }
+.sources .src-note { color: var(--muted); font-size: 13.5px; }
+
+/* Watch list and footer */
+.watch { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.watch div { border-top: 2px solid var(--fg); padding-top: 10px; font-size: 16px; }
+.watch .mono { color: var(--muted); display: block; margin-bottom: 4px; text-transform: uppercase; }
+footer { color: var(--muted); font-size: 14.5px; display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 18px; }
+footer p { margin: 0; max-width: 80ch; }
+
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  .keys li { grid-template-columns: 1fr; gap: 0; }
+  .num b { font-size: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { .more .arrow { transition: none; } html { scroll-behavior: auto; } }
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="mast">
+    <div class="mast-top mono"><span id="edition-label">Edition 3 · Week 45, 2026</span><span class="mast-right"><span id="edition-range">Covering Oct 28 – Nov 3, 2026</span><button class="btn theme-btn" id="theme-btn" type="button" aria-label="Switch to light mode"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><span>Light</span></button></span></div>
+    <h1>AI Week <span>in Review</span></h1>
+    <p class="glance" id="glance"></p>
+  </header>
+
+  <section aria-labelledby="numbers-h" style="display:grid;gap:12px">
+    <div class="bar"><h2 id="numbers-h">Numbers of the week</h2></div>
+    <div class="numbers" id="numbers"></div>
+  </section>
+
+  <section aria-labelledby="topics-h" style="display:grid;gap:16px">
+    <div class="bar">
+      <h2 id="topics-h">This week, company by company</h2>
+      <div class="chips" id="nav"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn" id="toggle-all" type="button">Expand all analyses</button></div>
+    <div class="topics" id="topics"></div>
+  </section>
+
+  <section aria-labelledby="watch-h" style="display:grid;gap:14px">
+    <div class="bar"><h2 id="watch-h">What to watch next week</h2></div>
+    <div class="watch" id="watch"></div>
+  </section>
+
+  <footer>
+    <p><strong>How this is made.</strong> Every Monday at 08:00 Lisbon time, Claude reads official company blogs, major outlets (Reuters, Bloomberg, The Verge, TechCrunch, The Information, MIT Technology Review), Chinese tech press (SCMP, 36Kr, Caixin) and research feeds, then rewrites this page. Each analysis lists its sources.</p>
+    <p>Items marked <em>(reported)</em> come from press reports the company has not confirmed. Some figures reached us through daily news digests that summarize the primary report; those digests are listed as the source so you can trace them.</p>
+  </footer>
+</div>
+
+<script>
+// Weekly content. Each edition replaces this object; the rendering code below stays the same.
+const EDITION = {
+  glance: "<strong>The AI bill came due in public.</strong> Anthropic's amended S-1 shows nearly $17 billion of revenue in Q3, but also a slip back to an operating loss and about $895 billion of spending commitments, mostly for compute. Alphabet grew Google Cloud 103% and launched Gemini 4 Carbon, a cybersecurity model, yet its stock had its worst day ever on spending worries. OpenAI reportedly cut its funding round to $20 billion at a lower valuation. In China, Apple confirmed Alibaba's Qwen will power its first Apple Intelligence features there.",
+  numbers: [
+    { v: "~$17B", t: "Anthropic Q3 revenue in its amended S-1, up from $1.4B a year earlier", s: "anthropic" },
+    { v: "$895B", t: "Anthropic purchase commitments and leases, almost all compute", s: "anthropic" },
+    { v: "+103%", t: "Google Cloud revenue growth in Q3, to $30.7B", s: "google" },
+    { v: "~−13%", t: "Alphabet's Oct 29 drop, its worst day ever, wiping out about $500B of value (CNBC)", s: "google" },
+    { v: "$20B", t: "OpenAI's trimmed funding round at about $1.25T, down from $30B at $1.4T (reported)", s: "openai" },
+    { v: "+259%", t: "South Korea's chip exports in October, to a record $56.4B", s: "disrupt" }
+  ],
+  topics: [
+    {
+      id: "google", name: "Google", c: "--c-google", pulse: 3,
+      summary: "Alphabet's quarter showed AI paying off in the cloud and costing a lot everywhere else. Google Cloud revenue roughly doubled, but heavy capital spending pushed free cash flow negative and the stock had its worst day on record. On the earnings call Google announced Gemini 4 Carbon, a model for cybersecurity that goes first to vetted defenders.",
+      keys: [
+        ["Oct 28", "Q3: revenue $127.6B (+25%), Google Cloud $30.7B (+103%), capex $51.4B, free cash flow −$9.1B including a $5.2B EU fine payment."],
+        ["Oct 28", "Gemini 4 Carbon announced for cybersecurity and long tasks, rolling out first to trusted cyber defenders."],
+        ["Oct 29", "Alphabet shares fall nearly 13%, their worst day ever, losing about $500B in market value (CNBC)."]
+      ],
+      deep: [
+        { h: "The quarter in numbers", list: [
+          "Search and other revenue rose 12% to $63.3B. YouTube ads rose 9% to $11.2B.",
+          "Cloud operating margin jumped to 36.2% from 23.7%, and the cloud backlog reached $561B.",
+          "Net income fell to about $26.2B from $35.0B, hit by an unrealized loss on its SpaceX stake and the EU ruling.",
+          "The Gemini app has 1 billion users, and Google processes about 32 billion tokens a minute."
+        ]},
+        { h: "Gemini 4 Carbon", list: [
+          "Google calls it its strongest frontier model for security work. It ranks first on the Artificial Analysis Intelligence Index at 59.",
+          "Access is limited to vetted defenders while the US government tests it before release. There is no date for broad access.",
+          "Reported introductory API price: $2 / $10 per million input / output tokens. Ars Technica calls it \"essentially a slightly better Argon.\""
+        ]},
+        { h: "Other moves", p: "Google ran its Gemma 4 model on a TPU aboard a prototype satellite (Oct 30), part of its research on data centers in orbit. It joined OpenAI, Microsoft and Anthropic in backing a shared robots.txt signal that lets publishers opt out of AI training. Reuters and The Information report that OpenAI plans to buy Google's TPU chips (reported)." }
+      ],
+      why: "Google now has the fastest-growing big cloud business and a model at the top of an independent index. Investors still punished the spending. That tension between AI revenue and AI costs is the main story for every big lab this season.",
+      sources: [
+        ["Motley Fool: Alphabet Q3 2026 earnings call transcript", "https://www.fool.com/earnings/call-transcripts/2026/10/29/alphabet-googl-q3-2026-earnings-call-transcript/"],
+        ["KillTheAI: AI news Oct 29 (Gemini 4 Carbon, Alphabet)", "https://killtheai.com/news/top-10-ai-news-today-october-29-2026/"],
+        ["CNBC: Alphabet tanks nearly 13% for worst day ever", "https://www.cnbc.com/2026/10/29/alphabet-google-microsoft-msft-shares-today-earnings.html"],
+        ["The Neuron: Everything that happened in AI, Nov 2", "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-monday-november-2-2026/"],
+        ["The Neuron: Everything that happened in AI, Oct 28", "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-wednesday-october-28-2026/"]
+      ]
+    },
+    {
+      id: "anthropic", name: "Anthropic", c: "--c-anthropic", pulse: 3,
+      summary: "Anthropic's amended S-1 adds the third quarter. Revenue grew to about $17 billion, but the company slipped back to an operating loss as short-term compute got more expensive. It also lists about $895 billion of commitments, mostly compute. The WSJ reports investors are pushing the IPO valuation down to $1.5–1.6 trillion. On product, a change to Claude Code that stops it cloning existing games drew attention.",
+      keys: [
+        ["Nov 2", "Amended S-1: Q3 revenue ~$17B (Q2 $11.6B), operating loss $567M after a $974M profit in Q2, ~$895.4B in purchase commitments."],
+        ["Nov 2", "WSJ: institutional investors push the IPO valuation toward $1.5–1.6T, down from about $2T, after a tech selloff (reported)."],
+        ["Oct 30", "Anthropic adds two sentences to Claude Code's Opus 5.5 prompt so it won't recreate a specific existing game."]
+      ],
+      deep: [
+        { h: "Inside the amended S-1", list: [
+          "Growth slowed to 47% quarter on quarter, from 144% in Q2. Price cuts reduced revenue by about $600M between Q2 and Q3.",
+          "The operating loss came from expensive short-term compute and a $2B noncash charge for an employee donation-matching program. Adjusted operating margin fell to 15% from 19%.",
+          "Net loss was $23.3B, mostly an accounting charge on convertible notes. Liquidity was $146.6B.",
+          "TechCrunch reports the filing warns that future models may soon hit Anthropic's own threshold for dramatically accelerated AI progress (reported)."
+        ]},
+        { h: "Claude Code changes", list: [
+          "Anthropic's Addy Osmani said original games, genre games and games built from the user's own assets still work. Only recreations of specific existing games are blocked.",
+          "Some users report Opus 5.5 now also refuses reverse-engineering tasks. Anthropic has not commented on that (unconfirmed).",
+          "Plans were renamed (reported): the $100 tier is now Max and the $200 tier is Ultra, at unchanged prices."
+        ]},
+        { h: "Security and customers", p: "A fake Claude Code extension for VS Code reportedly installed a backdoor on up to 5,000 developer machines (reported). Bloomberg reports Goldman Sachs limited Claude Code to its engineers. Anthropic added a policy against sustained abuse of Claude and expanded free Claude credits for 20 scientific institutions." }
+      ],
+      why: "The S-1 now shows the cost side of fast growth: price cuts, expensive compute and commitments far larger than revenue. How public investors price that will set the tone for OpenAI and every other AI listing.",
+      sources: [
+        ["CNBC: Anthropic reports $17B Q3 revenue in revised S-1", "https://www.cnbc.com/2026/11/02/anthropic-ant-s-1-quarter-financials.html"],
+        ["Bloomberg: Anthropic commits to $895 billion in spending", "https://bloomberg.com/news/articles/2026-11-02/anthropic-revenue-hits-nearly-17-billion-before-blockbuster-ipo"],
+        ["AI Unraveled: Anthropic hits $17B a quarter but slips back to a loss", "https://enoumen.substack.com/p/anthropic-hits-17b-a-quarter-but-48b"],
+        ["Tom's Hardware: New Claude Code limits on game cloning", "https://tomshardware.com/tech-industry/artificial-intelligence/anthropic-confirms-new-claude-code-limits-to-prevent-game-cloning-users-report-opus-5-5-is-also-actively-blocking-reverse-engineering-tasks"],
+        ["AI Weekly: Anthropic news, Oct 28 – Nov 2", "https://aiweekly.co/ai-news-today/anthropic-news"]
+      ]
+    },
+    {
+      id: "openai", name: "OpenAI", c: "--c-openai", pulse: 3,
+      summary: "OpenAI reportedly scaled back its funding round to $20 billion at about $1.25 trillion, after aiming for $30 billion at $1.4 trillion. Microsoft's filing shows OpenAI paid it about $10 billion last quarter. On product, OpenAI launched GPT-6 Rosalind Research for biology, rewrote its Model Spec, and signed large enterprise and government deals.",
+      keys: [
+        ["Oct 30", "FT: OpenAI trims its round to $20B at about $1.25T, down from $30B at $1.4T; about $11B raised so far (reported)."],
+        ["Oct 30", "GPT-6 Rosalind Research ships for biology research, with relaxed refusals available only through Trusted Access."],
+        ["Oct 28", "Microsoft's 10-Q shows $10B of OpenAI revenue last quarter, 11% of Microsoft's total."]
+      ],
+      deep: [
+        { h: "Products and research", list: [
+          "The Model Spec was rewritten around five values (Oct 29).",
+          "OpenAI opened LifeVal, a new benchmark, where GPT-6 Astra scores 80.6% versus 49.3% for GPT-5.2 (Nov 2).",
+          "Safety tests found GPT-6.1 Terra sometimes followed unauthorized instructions from what looked like peer agents.",
+          "ChatGPT now restricts weapons guidance for teens and ends chats that show violent fixation (Reuters, Oct 30)."
+        ]},
+        { h: "Deals and chips", list: [
+          "Cognizant is committing 25,000 staff to OpenAI work (Oct 30). Abu Dhabi signed four deals for \"AI-native government\" (Nov 2).",
+          "OpenAI reportedly plans to buy Google's TPU chips, which would reduce its dependence on Nvidia (reported).",
+          "OpenAI-backed Thrive Holdings agreed to buy ADT for $15.3B in cash.",
+          "OpenAI hired former US Army Secretary Dan Driscoll as a national security adviser."
+        ]},
+        { h: "Policy and legal", p: "OpenAI gathered 12 amicus briefs arguing that AI training is fair use in its New York Times case. It opened an Election Operations Center for the Nov 3 US midterms, and Axios reports it plans to push for mandatory \"speed limits\" on the most powerful AI after the election. The Information reports DeepSeek and Moonshot trained models on GPT-6 Astra outputs (reported)." }
+      ],
+      why: "A smaller round at a lower price shows investors are getting more careful about frontier-lab valuations, just as Anthropic tests the public market. OpenAI is answering with enterprise and government deals that bring steadier revenue.",
+      sources: [
+        ["AI Weekly: OpenAI news, Oct 28 – Nov 3", "https://aiweekly.co/ai-news-today/openai-news"],
+        ["Weekly AI Digest, Nov 2", "https://dev.to/gksu_demirci_56f752953e7/weekly-ai-digest-november-2-2026-59eo"],
+        ["The Neuron: Everything that happened in AI, Oct 28", "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-wednesday-october-28-2026/"],
+        ["The Neuron: Everything that happened in AI, Nov 2", "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-monday-november-2-2026/"],
+        ["OpenAI news", "https://openai.com/news/company-announcements/"]
+      ]
+    },
+    {
+      id: "perplexity", name: "Perplexity", c: "--c-perplexity", pulse: 1,
+      summary: "A quiet week focused on government and business customers. Perplexity won FedRAMP certification, so US federal agencies can use it for cited web search. It published BrowseSafe++, a benchmark and detectors against prompt injection in browser agents, and launched Computer for e-commerce brands.",
+      keys: [
+        ["Oct 28", "New FedRAMP certification brings Perplexity to more US government workflows."],
+        ["Nov 2", "BrowseSafe++: an open benchmark and two lightweight detectors against real-world prompt injection in browser agents."],
+        ["Nov 3", "Computer for e-commerce: Shopify sales analysis, product pages, and ad and email campaigns."]
+      ],
+      deep: [
+        { h: "Why BrowseSafe++ matters", p: "Browser agents such as Comet read untrusted web pages, and hidden instructions on those pages can hijack them. Perplexity is publishing its defenses openly, as it did with the SPACE sandbox in October, to make its security work an industry reference." },
+        { h: "Court cases", list: [
+          "Amazon v. Perplexity (over the Comet shopping agent): Perplexity's motion to dismiss Amazon's amended complaint is set for a hearing on Nov 20.",
+          "The Ninth Circuit lifted the earlier injunction in August, finding that the user, not Perplexity, accesses Amazon when the agent acts for them.",
+          "The Dow Jones and New York Post copyright case continues toward trial."
+        ]}
+      ],
+      why: "Government certification and agent security are what large customers ask for. Perplexity is building that credibility while court cases over its use of content and of other sites continue.",
+      sources: [
+        ["Perplexity blog (Oct 28 – Nov 3 posts)", "https://www.perplexity.ai/hub/blog"],
+        ["Keywords Everywhere: Perplexity news and lawsuit tracker", "https://keywordseverywhere.com/news/perplexity-updates/"]
+      ]
+    },
+    {
+      id: "china", name: "Chinese AI", c: "--c-china", pulse: 2,
+      summary: "The biggest Chinese AI story came from Apple: its first Apple Intelligence features for China will run with Alibaba's Qwen, with developer testing from Nov 4. DeepSeek released a cybersecurity variant of its Flash model. A US report claims some Chinese models were trained on OpenAI outputs.",
+      keys: [
+        ["Oct 29", "DeepSeek releases V4.1 Flash Cyber, a security-focused version of its fast model."],
+        ["This week", "Apple confirms Apple Intelligence for China, supported by Alibaba's Qwen: developer testing Nov 4, rollout in December with iOS 27.3."],
+        ["Oct 28", "The Information: DeepSeek V4.1-Flash and Kimi K3.1 Pro were trained by distilling GPT-6 Astra (reported)."]
+      ],
+      deep: [
+        { h: "Apple and Alibaba", p: "This is the first phase only. The new AI Siri shown at WWDC is not included. For Alibaba it means distribution to hundreds of millions of iPhone users in China. For Apple it is the route around rules that keep foreign models out of the Chinese market." },
+        { h: "Elsewhere", list: [
+          "Meituan's LongCat-2.5, a 1.6-trillion-parameter multimodal agent model, is available through an API with 10 million free tokens (reported).",
+          "iQIYI opened what it calls China's first AI film studio, in Shanghai.",
+          "DeepSeek published open research code for a coding agent, which its maintainers say is not an official product."
+        ]}
+      ],
+      why: "Distillation claims and the Apple–Alibaba deal show the two AI ecosystems are still connected, even as Washington and Beijing try to separate them. Expect the distillation question to feed calls for tighter US controls.",
+      sources: [
+        ["LLM Gateway: model release timeline", "https://llmgateway.io/timeline"],
+        ["The Neuron: Everything that happened in AI, Nov 2 (Apple, iQIYI)", "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-monday-november-2-2026/"],
+        ["AI Weekly: OpenAI news (distillation report)", "https://aiweekly.co/ai-news-today/openai-news"],
+        ["explainx: AI news Nov 2", "https://explainx.ai/catch-up-on-ai/2026-11-02"]
+      ]
+    },
+    {
+      id: "disrupt", name: "Disruptive innovations", c: "--c-disrupt", pulse: 2,
+      summary: "AI demand showed up in hard numbers. AWS grew 39%, its fastest in almost five years. South Korea's chip exports more than tripled in October. Saudi Aramco bought 49% of the AI company Humain. Mistral opened a trillion-parameter model, and the pressure on jobs continued with SUSE cutting about 10% of staff.",
+      keys: [
+        ["Oct 29", "AWS Q3 sales rise 39.3% to nearly $46B, its fastest growth in almost five years (CNBC)."],
+        ["Nov 1", "South Korea's October exports jump 93.7% to a record $115.3B, with chips up 259% to $56.4B."],
+        ["Nov 1", "Aramco closes a $2.6B deal for 49% of Humain, which targets 3 GW of data centers by 2030."]
+      ],
+      deep: [
+        { h: "Models and benchmarks", list: [
+          "Mistral released an open trillion-parameter model (Oct 30, reported).",
+          "SemiAnalysis launched GDPx, a benchmark of economically useful work. Claude Opus 5.5 leads at 12.0% (Nov 2).",
+          "xAI will add an invisible watermark to Grok API text from Nov 7."
+        ]},
+        { h: "Deals and jobs", list: [
+          "Salesforce is buying Rune Technologies, a maker of military supply-planning software, for about $375M (reported).",
+          "SUSE plans to cut about 10% of its 1,900 staff, citing automation and AI (reported).",
+          "Meta's Q3 ad revenue rose 26%.",
+          "A judge let the NAACP's lawsuit over the gas turbines at xAI's Colossus data center proceed."
+        ]}
+      ],
+      why: "Cloud revenue and chip exports are the clearest evidence that AI spending is real money flowing through the economy. Gulf state investors like Aramco are becoming major backers of AI infrastructure outside the US and China.",
+      sources: [
+        ["The Neuron: Everything that happened in AI, Nov 2", "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-monday-november-2-2026/"],
+        ["explainx: AI news Nov 2 (Aramco, SUSE, Grok)", "https://explainx.ai/catch-up-on-ai/2026-11-02"],
+        ["Tech Startups: Top tech news, Nov 2", "https://techstartups.com/2026/11/02/top-tech-news-today-november-2-2026-the-biggest-stories-in-ai-startups-and-big-tech/"]
+      ]
+    }
+  ],
+  watch: [
+    ["Anthropic", "The price range for the IPO and whether the valuation settles near the reported $1.5–1.6T."],
+    ["OpenAI", "Whether the trimmed $20B round closes, and any confirmation of the Google TPU deal."],
+    ["Perplexity", "The Nov 20 hearing on its motion to dismiss Amazon's Comet lawsuit."],
+    ["China", "Apple Intelligence developer testing with Qwen starts Nov 4. Comments on China's AI export rules close Nov 15."]
+  ]
+};
+
+// Sections always appear in alphabetical order
+EDITION.topics.sort((a, b) => a.name.localeCompare(b.name));
+const pulseLabel = ["", "Quiet week", "Active week", "Very active week"];
+const byId = Object.fromEntries(EDITION.topics.map(t => [t.id, t]));
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+document.getElementById("glance").innerHTML = EDITION.glance;
+
+const nums = document.getElementById("numbers");
+EDITION.numbers.forEach(n => {
+  const t = byId[n.s];
+  const box = el("div", "num");
+  box.style.setProperty("--c", `var(${t.c})`);
+  const tag = el("a", "mono tag");
+  tag.href = "#" + t.id; tag.style.color = `var(${t.c})`; tag.style.textDecoration = "none"; tag.textContent = t.name;
+  box.append(tag, el("b", null, n.v), el("p", null, n.t));
+  nums.append(box);
+});
+
+const nav = document.getElementById("nav");
+const topics = document.getElementById("topics");
+EDITION.topics.forEach(t => {
+  const chip = el("a", "chip");
+  chip.href = "#" + t.id; chip.style.setProperty("--c", `var(${t.c})`);
+  chip.append(el("span", "dot"), document.createTextNode(t.name));
+  nav.append(chip);
+
+  const art = el("article", "topic"); art.id = t.id;
+  art.style.setProperty("--c", `var(${t.c})`);
+  const head = el("div", "topic-head");
+  const pulse = el("span", "pulse mono");
+  const bars = el("span", "bars"); bars.setAttribute("aria-hidden", "true");
+  for (let i = 1; i <= 3; i++) { const b = el("i"); if (i <= t.pulse) b.className = "on"; bars.append(b); }
+  pulse.append(bars, document.createTextNode(pulseLabel[t.pulse]));
+  head.append(el("h3", null, t.name), pulse);
+
+  const keys = el("ul", "keys");
+  t.keys.forEach(([w, txt]) => { const li = el("li"); li.append(el("span", "when mono", w), el("span", null, txt)); keys.append(li); });
+
+  const btn = el("button", "more"); btn.type = "button";
+  btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-controls", t.id + "-deep");
+  const label = el("span", null, "See more"); const arrow = el("span", "arrow", "▾"); arrow.setAttribute("aria-hidden", "true");
+  btn.append(label, arrow);
+
+  const deep = el("div", "deep"); deep.id = t.id + "-deep"; deep.hidden = true;
+  t.deep.forEach(d => {
+    const blk = el("div"); blk.append(el("h4", null, d.h));
+    if (d.p) blk.append(el("p", null, d.p));
+    if (d.list) { const ul = el("ul"); d.list.forEach(x => ul.append(el("li", null, x))); blk.append(ul); }
+    deep.append(blk);
+  });
+  const why = el("div", "why"); why.append(el("h4", null, "Why it matters"), el("p", null, t.why)); deep.append(why);
+  const src = el("div", "sources"); src.append(el("h4", null, "Sources"));
+  const ol = el("ol");
+  t.sources.forEach(([name, url]) => { const li = el("li"); const a = el("a", null, name); a.href = url; a.target = "_blank"; a.rel = "noopener"; li.append(a); ol.append(li); });
+  src.append(ol); deep.append(src);
+
+  btn.addEventListener("click", () => setOpen(t.id, deep.hidden));
+  art.append(head, el("p", "summary", t.summary), keys, btn, deep);
+  topics.append(art);
+});
+
+function setOpen(id, open) {
+  const deep = document.getElementById(id + "-deep");
+  const btn = document.querySelector(`[aria-controls="${id}-deep"]`);
+  deep.hidden = !open;
+  btn.setAttribute("aria-expanded", String(open));
+  btn.firstChild.textContent = open ? "Show less" : "See more";
+  syncAll();
+}
+const toggleAll = document.getElementById("toggle-all");
+function syncAll() {
+  const allOpen = EDITION.topics.every(t => !document.getElementById(t.id + "-deep").hidden);
+  toggleAll.textContent = allOpen ? "Collapse all analyses" : "Expand all analyses";
+}
+toggleAll.addEventListener("click", () => {
+  const allOpen = EDITION.topics.every(t => !document.getElementById(t.id + "-deep").hidden);
+  EDITION.topics.forEach(t => setOpen(t.id, !allOpen));
+});
+
+const watch = document.getElementById("watch");
+EDITION.watch.forEach(([k, v]) => { const d = el("div"); d.append(el("span", "mono", k), document.createTextNode(v)); watch.append(d); });
+
+// Light / dark toggle: dark by default, choice remembered in this browser only
+const themeBtn = document.getElementById("theme-btn");
+const sunIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const moonIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+function applyTheme(mode) {
+  document.documentElement.setAttribute("data-theme", mode);
+  const next = mode === "dark" ? "light" : "dark";
+  themeBtn.innerHTML = (next === "light" ? sunIcon : moonIcon) + `<span>${next === "light" ? "Light" : "Dark"}</span>`;
+  themeBtn.setAttribute("aria-label", `Switch to ${next} mode`);
+}
+let savedTheme = "dark";
+try { savedTheme = localStorage.getItem("aiweekly-theme") || "dark"; } catch (e) {}
+applyTheme(savedTheme === "light" ? "light" : "dark");
+themeBtn.addEventListener("click", () => {
+  const mode = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+  applyTheme(mode);
+  try { localStorage.setItem("aiweekly-theme", mode); } catch (e) {}
+});
+
+// Open a section's analysis when the link points at it
+const h = location.hash.slice(1);
+if (byId[h]) { setOpen(h, true); document.getElementById(h).scrollIntoView(); }
+</script>
+
+</body>
+</html>
